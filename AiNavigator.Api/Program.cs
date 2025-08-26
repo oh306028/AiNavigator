@@ -1,3 +1,5 @@
+using AiNavigator.Api.Services;
+
 namespace AiNavigator.Api
 {
     public class Program
@@ -9,6 +11,8 @@ namespace AiNavigator.Api
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddHttpClient<ModelsService>();
+
 
             var app = builder.Build();
 
