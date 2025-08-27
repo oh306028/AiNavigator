@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace AiNavigator.Api.Enums
 {
+
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum Category
     {
         [Description("Generowanie tekstu")]

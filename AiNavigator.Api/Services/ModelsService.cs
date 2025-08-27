@@ -26,6 +26,25 @@ namespace AiNavigator.Api.Services
                 Przeszukaj mozliwie jak najwiecej zrodel na ten temat, stworz porownania i wybierz najlepsze wyniki w podanej kategorii.
                 Przedstaw dane w taki sposób, by użytkownik ktory nie ma styczności z technicznymi zagadnieniami mógł odpowiednio zrozumieć cał kontekst odpowiedzi.
                 Przeanalizuj swoją odpowiedź i dostosuj ją by była jak najbardziej optymalna.
+                Odpowiedz *tylko* czystym JSON-em, bez żadnych komentarzy ani bloków kodu.
+                Prosze by kategorie zostaly zwracane tylko jako te dopasowane do enuma:
+    public enum Category
+    {{
+        [Description(""Generowanie tekstu"")]
+        Text,
+
+        [Description(""Generowanie video"")]
+        Video,
+
+        [Description(""Programowanie"")]
+        Development,
+
+        [Description(""Generowanie grafiki"")]
+        Graphics,
+
+        [Description(""Agenci AI"")]
+        Agents
+    }}
                 Odpowiedź zwróć wyłącznie jako poprawny JSON w formacie:
 
                 {{
@@ -61,9 +80,18 @@ namespace AiNavigator.Api.Services
             httpRequest.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(httpRequest);
-            response.EnsureSuccessStatusCode();
+
 
             var responseString = await response.Content.ReadAsStringAsync();
+
+            Console.WriteLine(">>> RAW RESPONSE <<<");
+            Console.WriteLine(responseString);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception($"OpenAI error: {response.StatusCode} - {responseString}");
+            }
+
 
             using var doc = JsonDocument.Parse(responseString);
             var content = doc.RootElement
