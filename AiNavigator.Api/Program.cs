@@ -1,4 +1,6 @@
 using AiNavigator.Api.Services;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+
 
 namespace AiNavigator.Api
 {
@@ -12,6 +14,12 @@ namespace AiNavigator.Api
 
             builder.Services.AddControllers();
             builder.Services.AddHttpClient<ModelsService>();
+
+            builder.Services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = builder.Configuration.GetConnectionString("Redis");
+                options.InstanceName = "AiNavigator_";
+            });
 
 
             var app = builder.Build();

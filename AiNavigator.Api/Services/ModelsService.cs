@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using AiNavigator.Api.Models;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace AiNavigator.Api.Services
 {
@@ -9,18 +10,44 @@ namespace AiNavigator.Api.Services
     {
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
+        private readonly IDistributedCache _cache;
 
-        public ModelsService(HttpClient httpClient, IConfiguration config)
+        public ModelsService(HttpClient httpClient, IConfiguration config, IDistributedCache cache)
         {
             _httpClient = httpClient;
             _config = config;
+            _cache = cache;
         }
 
         public async Task<PromptDetails> GetModelsAsync(PromptForm form)
         {
+            var cacheKey = $"models:{form.Category}";
+
+            var cached = await _cache.GetStringAsync(cacheKey);
+            if (!string.IsNullOrEmpty(cached))            
+                return JsonSerializer.Deserialize<PromptDetails>(cached)!;
+            
+
+            var result = await FetchDataFromApi(form);
+
+            var options = new DistributedCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
+            };
+
+            await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(result), options);
+
+            return result;
+        }
+
+
+
+        private async Task<PromptDetails> FetchDataFromApi(PromptForm form)  
+        {
             var apiKey = _config["OpenAI:ApiKey"];
             var url = "https://api.openai.com/v1/chat/completions";
 
+            #region PROMPT
             var prompt = $@"
                 Jesteś ekspertem AI. Podaj listę TOP 5 najlepszych modeli AI dla kategorii: {form.Category}.
                 Przeszukaj mozliwie jak najwiecej zrodel na ten temat, stworz porownania i wybierz najlepsze wyniki w podanej kategorii.
@@ -74,24 +101,21 @@ namespace AiNavigator.Api.Services
                 temperature = 0.2
             };
 
+            #endregion
+
+            #region API CONFIG
             var requestJson = JsonSerializer.Serialize(requestBody);
             var httpRequest = new HttpRequestMessage(HttpMethod.Post, url);
             httpRequest.Headers.Add("Authorization", $"Bearer {apiKey}");
             httpRequest.Content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+            #endregion
 
             var response = await _httpClient.SendAsync(httpRequest);
-
-
             var responseString = await response.Content.ReadAsStringAsync();
 
-            Console.WriteLine(">>> RAW RESPONSE <<<");
-            Console.WriteLine(responseString);
-
-            if (!response.IsSuccessStatusCode)
-            {
+            if (!response.IsSuccessStatusCode)          
                 throw new Exception($"OpenAI error: {response.StatusCode} - {responseString}");
-            }
-
+            
 
             using var doc = JsonDocument.Parse(responseString);
             var content = doc.RootElement
