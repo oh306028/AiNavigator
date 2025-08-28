@@ -1,7 +1,10 @@
 ﻿using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using AiNavigator.Api.Dtos;
+using AiNavigator.Api.Entities;
 using AiNavigator.Api.Models;
+using AutoMapper;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace AiNavigator.Api.Services
@@ -11,12 +14,15 @@ namespace AiNavigator.Api.Services
         private readonly HttpClient _httpClient;
         private readonly IConfiguration _config;
         private readonly IDistributedCache _cache;
-
-        public ModelsService(HttpClient httpClient, IConfiguration config, IDistributedCache cache)
+        private readonly AppDbContext _context;
+        private readonly IMapper _mapper;
+        public ModelsService(HttpClient httpClient, IConfiguration config, IDistributedCache cache, AppDbContext context, IMapper mapper)
         {
             _httpClient = httpClient;
             _config = config;
             _cache = cache;
+            _context = context;
+            _mapper = mapper;
         }
 
         public async Task<PromptDetails> GetModelsAsync(PromptForm form)
@@ -24,10 +30,10 @@ namespace AiNavigator.Api.Services
             var cacheKey = $"models:{form.Category}";
 
             var cached = await _cache.GetStringAsync(cacheKey);
-            if (!string.IsNullOrEmpty(cached))            
-                return JsonSerializer.Deserialize<PromptDetails>(cached)!;
-            
 
+            if (!string.IsNullOrEmpty(cached))
+                return JsonSerializer.Deserialize<PromptDetails>(cached)!;
+              
             var result = await FetchDataFromApi(form);
 
             var options = new DistributedCacheEntryOptions
@@ -36,6 +42,20 @@ namespace AiNavigator.Api.Services
             };
 
             await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(result), options);
+
+            var newHistories = result.TopModels.Select(model =>
+            {
+                var detailsDto = _mapper.Map<PromptDetailsDto>(model);
+                detailsDto.GeneralSummary = result.GeneralSummary;
+
+                return new RequestHistory(detailsDto)
+                {
+                    RequestId = Guid.NewGuid()
+                };
+            }).ToList();
+
+            _context.Requests.AddRange(newHistories);
+            await _context.SaveChangesAsync();
 
             return result;
         }
