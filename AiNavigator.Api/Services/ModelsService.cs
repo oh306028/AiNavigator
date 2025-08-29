@@ -43,19 +43,27 @@ namespace AiNavigator.Api.Services
 
             await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(result), options);
 
+            var summary = new RequestSummary()
+            {
+                GeneralSummary = result.GeneralSummary
+            };
+
+            _context.Summaries.Add(summary);
+
             var requestId = Guid.NewGuid();
             var newHistories = result.TopModels.Select(model =>
             {
                 var detailsDto = _mapper.Map<PromptDetailsDto>(model);
-                detailsDto.GeneralSummary = result.GeneralSummary;
 
                 return new RequestHistory(detailsDto)
                 {
-                    RequestId = requestId
+                    RequestId = requestId,
+                    Summary = summary
                 };
             }).ToList();
 
             _context.Requests.AddRange(newHistories);
+
             await _context.SaveChangesAsync();
 
             return result;

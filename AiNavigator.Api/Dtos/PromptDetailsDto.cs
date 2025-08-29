@@ -12,6 +12,5 @@ namespace AiNavigator.Api.Dtos
         public string Pros { get; set; }
         public string Cons { get; set; }
         public int Rank { get; set; }
-        public string GeneralSummary { get; set; }
     }
 }

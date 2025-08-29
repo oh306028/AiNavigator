@@ -3,6 +3,7 @@ using System;
 using AiNavigator.Api;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AiNavigator.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250829220536_conclusionAdd")]
+    partial class conclusionAdd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,12 +35,7 @@ namespace AiNavigator.Api.Migrations
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("RequestSummaryId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("RequestSummaryId");
 
                     b.ToTable("Requests");
                 });
@@ -61,12 +58,6 @@ namespace AiNavigator.Api.Migrations
 
             modelBuilder.Entity("AiNavigator.Api.Entities.RequestHistory", b =>
                 {
-                    b.HasOne("AiNavigator.Api.Entities.RequestSummary", "Summary")
-                        .WithMany("RequestHistories")
-                        .HasForeignKey("RequestSummaryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.OwnsOne("AiNavigator.Api.Dtos.PromptDetailsDto", "Details", b1 =>
                         {
                             b1.Property<int>("RequestHistoryId")
@@ -113,13 +104,6 @@ namespace AiNavigator.Api.Migrations
                         });
 
                     b.Navigation("Details");
-
-                    b.Navigation("Summary");
-                });
-
-            modelBuilder.Entity("AiNavigator.Api.Entities.RequestSummary", b =>
-                {
-                    b.Navigation("RequestHistories");
                 });
 #pragma warning restore 612, 618
         }

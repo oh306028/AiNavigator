@@ -11,6 +11,9 @@ namespace AiNavigator.Api.Entities
         public Guid RequestId { get; set; }
         public PromptDetailsDto Details { get; set; }
 
+        public int RequestSummaryId { get; set; }
+        public virtual RequestSummary Summary { get; set; }
+
         public RequestHistory(PromptDetailsDto details)
         {
             Details = details;
@@ -46,7 +49,6 @@ namespace AiNavigator.Api.Entities
                             Pros = string.Join(", ", model.Pros ?? new List<string>()),
                             Cons = string.Join(", ", model.Cons ?? new List<string>()),
                             Rank = model.Rank,
-                            GeneralSummary = src.GeneralSummary
                         }
                     }).ToList();
                 });
@@ -57,8 +59,7 @@ namespace AiNavigator.Api.Entities
                 .ForMember(dest => dest.Link, opt => opt.MapFrom(src => src.Link))
                 .ForMember(dest => dest.Pros, opt => opt.MapFrom(src => string.Join(", ", src.Pros ?? new List<string>())))
                 .ForMember(dest => dest.Cons, opt => opt.MapFrom(src => string.Join(", ", src.Cons ?? new List<string>())))
-                .ForMember(dest => dest.Rank, opt => opt.MapFrom(src => src.Rank))
-                .ForMember(dest => dest.GeneralSummary, opt => opt.Ignore());
+                .ForMember(dest => dest.Rank, opt => opt.MapFrom(src => src.Rank));
 
 
 
