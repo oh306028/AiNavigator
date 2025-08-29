@@ -5,6 +5,7 @@ using AiNavigator.Api.Dtos;
 using AiNavigator.Api.Entities;
 using AiNavigator.Api.Models;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace AiNavigator.Api.Services
@@ -24,6 +25,25 @@ namespace AiNavigator.Api.Services
             _context = context;
             _mapper = mapper;
         }
+
+        public async Task<List<RequestGroupDto>> GetHistory()
+        {
+            var result = await _context.Requests
+                .Include(p => p.Summary)
+                .AsNoTracking()
+                .GroupBy(r => r.RequestId)
+                .Select(g => new RequestGroupDto
+                {
+                    RequestId = g.Key,
+                    Models = g.Select(r => r.Details).ToList(),
+                    Summary = g.Select(r => r.Summary.GeneralSummary).FirstOrDefault(),
+                    RequestDate = g.Select(r => r.Details.QueryDate).FirstOrDefault()
+                })
+                .ToListAsync();
+
+            return result;
+        }
+
 
         public async Task<PromptDetails> GetModelsAsync(PromptForm form)
         {
@@ -58,7 +78,7 @@ namespace AiNavigator.Api.Services
                 return new RequestHistory(detailsDto)
                 {
                     RequestId = requestId,
-                    Summary = summary
+                    Summary = summary,                                       
                 };
             }).ToList();
 
@@ -81,6 +101,7 @@ namespace AiNavigator.Api.Services
                 Jesteś ekspertem AI. Podaj listę TOP 5 najlepszych modeli AI dla kategorii: {form.Category}.
                 Przeszukaj mozliwie jak najwiecej zrodel na ten temat, stworz porownania i wybierz najlepsze wyniki w podanej kategorii.
                 Przedstaw dane w taki sposób, by użytkownik ktory nie ma styczności z technicznymi zagadnieniami mógł odpowiednio zrozumieć cał kontekst odpowiedzi.
+                Prosze aby summary bylo bardziej szczegolowe, zeby dla kazdej kategorii, jesli jest wybrana bylo lepiej opisane, dokladniej wchodzilo w dziedzine.
                 Przeanalizuj swoją odpowiedź i dostosuj ją by była jak najbardziej optymalna.
                 Odpowiedz *tylko* czystym JSON-em, bez żadnych komentarzy ani bloków kodu.
                 Prosze by kategorie zostaly zwracane tylko jako te dopasowane do enuma:
