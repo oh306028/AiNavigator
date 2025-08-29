@@ -43,6 +43,7 @@ namespace AiNavigator.Api.Services
 
             await _cache.SetStringAsync(cacheKey, JsonSerializer.Serialize(result), options);
 
+            var requestId = Guid.NewGuid();
             var newHistories = result.TopModels.Select(model =>
             {
                 var detailsDto = _mapper.Map<PromptDetailsDto>(model);
@@ -50,7 +51,7 @@ namespace AiNavigator.Api.Services
 
                 return new RequestHistory(detailsDto)
                 {
-                    RequestId = Guid.NewGuid()
+                    RequestId = requestId
                 };
             }).ToList();
 
