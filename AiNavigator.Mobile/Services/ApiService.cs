@@ -1,11 +1,9 @@
-﻿using AiNavigator.Mobile.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text;
 using System.Threading.Tasks;
-using System.Net.Http; // Dodaj to using
+using AiNavigator.Mobile.Models;
 
 namespace AiNavigator.Mobile.Services
 {
@@ -22,12 +20,11 @@ namespace AiNavigator.Mobile.Services
 
             _httpClient = new HttpClient(handler)
             {
-
                 BaseAddress = new Uri("https://10.0.2.2:7233/")
             };
         }
 
-        public async Task<PromptDetails> GetModelsAsync(Category category)
+        public async Task<ApiResult> GetModelsAsync(Category category)
         {
             var form = new PromptForm { Category = category };
 
@@ -36,13 +33,12 @@ namespace AiNavigator.Mobile.Services
                 var response = await _httpClient.PostAsJsonAsync("api/models", form);
                 response.EnsureSuccessStatusCode();
 
-                var result = await response.Content.ReadFromJsonAsync<PromptDetails>();
+                var result = await response.Content.ReadFromJsonAsync<ApiResult>();
                 return result!;
             }
             catch (HttpRequestException ex)
             {
-
-                Console.WriteLine($"Błąd HTTP Request: {ex.Message}");
+                Console.WriteLine($"Błąd HTTP Request: {ex.StatusCode} - {ex.Message}");
                 if (ex.InnerException != null)
                 {
                     Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
@@ -51,7 +47,7 @@ namespace AiNavigator.Mobile.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ogólny błąd: {ex.Message}");
+                Console.WriteLine($"Ogólny błąd w ApiService: {ex.Message}");
                 throw;
             }
         }

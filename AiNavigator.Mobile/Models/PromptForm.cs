@@ -9,7 +9,6 @@ namespace AiNavigator.Mobile.Models
     public class PromptForm
     {
         public Category Category { get; set; }
-        public string Prompt { get; set; }
 
     }
 }
