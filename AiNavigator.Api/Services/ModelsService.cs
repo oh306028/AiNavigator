@@ -74,11 +74,12 @@ namespace AiNavigator.Api.Services
             var newHistories = result.TopModels.Select(model =>
             {
                 var detailsDto = _mapper.Map<PromptDetailsDto>(model);
+                detailsDto.QueryDate = DateTime.Now.ToShortDateString();
 
                 return new RequestHistory(detailsDto)
                 {
                     RequestId = requestId,
-                    Summary = summary,                                       
+                    Summary = summary,                      
                 };
             }).ToList();
 
