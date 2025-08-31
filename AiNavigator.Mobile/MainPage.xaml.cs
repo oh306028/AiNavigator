@@ -40,10 +40,15 @@ public partial class MainPage : ContentPage
             {
                 SummaryLabel.Text = result.Summary;
                 ModelsCollection.ItemsSource = result.Models;
+                SummaryLabel.IsVisible = true;
+                ModelsSection.IsVisible = true;
+
             }
             else
             {
                 await DisplayAlert("Informacja", $"Nie znaleziono modeli dla kategorii '{selectedCategory}'.", "OK");
+                SummaryLabel.IsVisible = true;
+                ModelsSection.IsVisible = true;
             }
         }
         catch (Exception ex)
