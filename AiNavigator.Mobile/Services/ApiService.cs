@@ -18,9 +18,11 @@ namespace AiNavigator.Mobile.Services
             handler.ServerCertificateCustomValidationCallback =
                 (message, cert, chain, errors) => true;
 
+            var baseAddress = DeviceInfo.Platform == DevicePlatform.WinUI ? "https://localhost:7233/" : "https://10.0.2.2:7233/";
+
             _httpClient = new HttpClient(handler)
             {
-                BaseAddress = new Uri("https://10.0.2.2:7233/")
+                BaseAddress = new Uri(baseAddress)
             };
         }
 
