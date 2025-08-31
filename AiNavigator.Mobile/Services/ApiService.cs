@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AiNavigator.Mobile.Models;
 
@@ -53,5 +54,20 @@ namespace AiNavigator.Mobile.Services
                 throw;
             }
         }
-    }
+
+        public async Task<List<ApiGroupResult>> GetHistoryAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetStringAsync("api/models/history"); 
+                var history = JsonSerializer.Deserialize<List<ApiGroupResult>>(response);
+                return history ?? new List<ApiGroupResult>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GetHistoryAsync Error: {ex}");
+                return new List<ApiGroupResult>();
+            }
+        }
+    }   
 }

@@ -14,6 +14,8 @@ namespace AiNavigator.Api.Entities
         public int RequestSummaryId { get; set; }
         public virtual RequestSummary Summary { get; set; }
 
+        public DateTime RequestDate { get; set; }   
+
         public RequestHistory(PromptDetailsDto details)
         {
             Details = details;

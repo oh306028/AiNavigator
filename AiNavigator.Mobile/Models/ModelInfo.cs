@@ -14,5 +14,6 @@ namespace AiNavigator.Mobile.Models
         public List<string> Pros { get; set; } = new List<string>();
         public List<string> Cons { get; set; } = new List<string>();
         public int Rank { get; set; }
+        public int Category { get; set; }   
     }
 }

@@ -28,20 +28,24 @@ namespace AiNavigator.Api.Services
 
         public async Task<List<RequestGroupDto>> GetHistory()
         {
-            var result = await _context.Requests
-                .Include(p => p.Summary)
-                .AsNoTracking()
+            var histories = await _context.Requests
+                 .Include(r => r.Summary)
+                 .ToListAsync();
+
+            var grouped = histories
                 .GroupBy(r => r.RequestId)
                 .Select(g => new RequestGroupDto
                 {
                     RequestId = g.Key,
                     Models = g.Select(r => r.Details).ToList(),
-                    Summary = g.Select(r => r.Summary.GeneralSummary).FirstOrDefault(),
-                    RequestDate = g.Select(r => r.Details.QueryDate).FirstOrDefault()
+                    Summary = g.FirstOrDefault()?.Summary?.GeneralSummary,
+                    RequestDate = g.FirstOrDefault()?.RequestDate.ToString()
                 })
-                .ToListAsync();
+                .OrderByDescending(r => r.RequestDate)
+                .ToList();
 
-            return result;
+
+            return grouped;
         }
 
 
@@ -74,12 +78,13 @@ namespace AiNavigator.Api.Services
             var newHistories = result.TopModels.Select(model =>
             {
                 var detailsDto = _mapper.Map<PromptDetailsDto>(model);
-                detailsDto.QueryDate = DateTime.Now.ToShortDateString();
 
                 return new RequestHistory(detailsDto)
                 {
                     RequestId = requestId,
-                    Summary = summary,                      
+                    Summary = summary,
+                    RequestDate = DateTime.Now
+
                 };
             }).ToList();
 

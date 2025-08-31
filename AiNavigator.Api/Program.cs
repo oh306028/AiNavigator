@@ -29,6 +29,7 @@ namespace AiNavigator.Api
             builder.Services.AddAutoMapper(typeof(MappingProfile));
 
             var app = builder.Build();
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             // Configure the HTTP request pipeline.
 

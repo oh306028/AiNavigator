@@ -8,6 +8,8 @@ namespace AiNavigator.Mobile;
 public partial class MainPage : ContentPage
 {
     private readonly ApiService _apiService;
+    private List<ApiGroupResult> _results = new();
+
 
     public ICommand OpenLinkCommand { get; }
 
@@ -18,6 +20,27 @@ public partial class MainPage : ContentPage
         OpenLinkCommand = new Command<string>(async (url) => await OpenLink(url));
         BindingContext = this;
     }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+
+        _results = await _apiService.GetHistoryAsync();
+    }
+
+    private async void OnHistoryClicked(object sender, EventArgs e)
+    {
+        if (_results != null && _results.Any())
+        {
+            await Navigation.PushAsync(new HistoryPage(_results));
+        }
+        else
+        {
+            await DisplayAlert("Brak danych", "Nie znaleziono historii", "OK");
+        }
+    }
+
+
 
     private async void OnSendPromptClicked(object sender, EventArgs e)
     {
@@ -35,6 +58,7 @@ public partial class MainPage : ContentPage
             ModelsCollection.ItemsSource = null;
 
             var result = await _apiService.GetModelsAsync(selectedCategory);
+            _results = await _apiService.GetHistoryAsync();
 
             if (result != null)
             {

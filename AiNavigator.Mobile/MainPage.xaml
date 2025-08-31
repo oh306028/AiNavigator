@@ -176,6 +176,13 @@
                         <Button Text="🚀 Znajdź modele AI"
                                 Clicked="OnSendPromptClicked"
                                 Style="{StaticResource PrimaryButtonStyle}"/>
+
+                        <Button Text="📜 Historia wyszukiwań"
+                Clicked="OnHistoryClicked"
+                BackgroundColor="#6366F1"
+                TextColor="White"
+                CornerRadius="12"
+                HeightRequest="50"/>
                     </VerticalStackLayout>
                 </Frame>
 
