@@ -14,7 +14,6 @@
                                 <StackLayout Orientation="Horizontal">
                                     <Label Text="{Binding Name}" Margin="5"/>
                                     <Label Text="{Binding Rank}" Margin="5"/>
-                                    <Label Text="{Binding Category}" Margin="5"/>
                                 </StackLayout>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>

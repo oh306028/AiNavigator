@@ -41,7 +41,7 @@ namespace AiNavigator.Api.Services
                     Summary = g.FirstOrDefault()?.Summary?.GeneralSummary,
                     RequestDate = g.FirstOrDefault()?.RequestDate.ToString()
                 })
-                .OrderByDescending(r => r.RequestDate)
+                .OrderBy(r => r.RequestDate)
                 .ToList();
 
 
